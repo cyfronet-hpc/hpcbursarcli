@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.9
+#!/usr/bin/env python3.8
 
 '''
 hpc-grants - Show available grant with details.
@@ -21,13 +21,17 @@ import os
 from docopt import docopt
 
 VERSION = '0.1'
-BURSAR_URL = os.getenv('BURSAR_URL', 'https://localhost/api/v1/')
+BURSAR_URL = os.getenv('BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 SERVICE = 'user/user_grants_info'
 URL = BURSAR_URL + SERVICE
 
 
 def generate_token(user, service):
-    return pymunge.encode(user + ':' + service)
+    user_service = user + ':' + service
+    bytes_user_service = str.encode(user_service)
+    with pymunge.MungeContext() as ctx:
+        user_service = ctx.encode(bytes_user_service)
+    return user_service
 
 
 def get_data():
@@ -35,7 +39,8 @@ def get_data():
     header = {
         'x-auth-hpcbursar': generate_token(user, SERVICE)
     }
-    response = requests.get(URL + user)
+    # TODO change user to plg...
+    response = requests.get(URL + user, headers=header)
     if response.status_code == 403:
         raise Exception('You are unauthorized to perform this request!')
     elif response.status_code != 200:
@@ -47,8 +52,10 @@ def get_data():
     except Exception as e:
         raise Exception('Unable to parse server\'s response!')
 
+
 def print_grant_info(data):
-    import pprint; pprint(data)
+    import pprint
+    pprint.pprint(data)
 
 
 def main():
@@ -58,7 +65,6 @@ def main():
         sys.exit(0)
 
     data = get_data()
-
     for grant in data:
         print_grant_info(grant)
 
