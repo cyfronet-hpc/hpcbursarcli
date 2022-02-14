@@ -39,8 +39,7 @@ def get_data():
     header = {
         'x-auth-hpcbursar': generate_token(user, SERVICE)
     }
-    # TODO change user to plg...
-    response = requests.get(URL + user, headers=header)
+    response = requests.get(URL + '/' + user, headers=header)
     if response.status_code == 403:
         raise Exception('You are unauthorized to perform this request!')
     elif response.status_code != 200:
@@ -54,8 +53,21 @@ def get_data():
 
 
 def print_grant_info(data):
-    import pprint
-    pprint.pprint(data)
+    name, start, end, state, allocations, group, group_members = data
+    print(f"""Grant name    | {data[name]}
+-----------------------------------------------------------------------------
+Start date    | {data[start]}
+End date      | {data[end]}
+-----------------------------------------------------------------------------
+State         | {data[state]}
+-----------------------------------------------------------------------------
+Allocations   |    CPU      | timelimit {data[allocations][0].split()[-3]} hours {data[allocations][0].split()[-1].replace("}", "")}
+              |    GPU      | timelimit {data[allocations][1].split()[-3]} hours {data[allocations][1].split()[-1].replace("}", "")}
+              |   Storage   | capacity {data[allocations][2].split()[-1].replace("}", "")}
+-----------------------------------------------------------------------------
+Group name    | {data[group]}
+Group members | {''.join((f'{member} ' for member in data[group_members]))}
+""")
 
 
 def main():
