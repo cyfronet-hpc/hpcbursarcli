@@ -117,7 +117,7 @@ def main():
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
-    data = get_data()
+    data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
     for i in range(len(data)):
         grant = data[i]
         print_grant_info(grant)
