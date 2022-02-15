@@ -16,9 +16,9 @@ Options:
 import os
 import sys
 
-lib_dir = 'HPC_BURSAR_LIBDIR'
-if lib_dir in os.environ.keys():
-    sys.path.append(os.environ[lib_dir])
+env_lib_dir = 'HPC_BURSAR_LIBDIR'
+if env_lib_dir in os.environ.keys():
+    sys.path.append(os.environ[env_lib_dir])
 
 import requests
 import pymunge
@@ -27,6 +27,7 @@ from docopt import docopt
 
 VERSION = '0.1'
 BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
+BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
 SERVICE = 'user/user_grants_info'
 URL = BURSAR_URL + SERVICE
 
@@ -44,7 +45,7 @@ def get_data():
     header = {
         'x-auth-hpcbursar': generate_token(user, SERVICE)
     }
-    response = requests.get(URL + '/' + user, headers=header)
+    response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
     if response.status_code == 403:
         raise Exception('You are unauthorized to perform this request!')
     elif response.status_code != 200:
