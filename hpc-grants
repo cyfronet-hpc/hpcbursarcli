@@ -26,7 +26,7 @@ import pymunge
 from docopt import docopt
 
 VERSION = '0.1'
-BURSAR_URL = os.getenv('BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
+BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 SERVICE = 'user/user_grants_info'
 URL = BURSAR_URL + SERVICE
 
