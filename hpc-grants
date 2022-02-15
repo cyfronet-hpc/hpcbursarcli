@@ -22,6 +22,8 @@ if env_lib_dir in os.environ.keys():
 
 import requests
 import pymunge
+import json
+from collections import OrderedDict
 
 from docopt import docopt
 
@@ -59,22 +61,54 @@ def get_data():
         raise Exception('Unable to parse server\'s response!')
 
 
+def order_allocations(allocs):
+    return sorted(allocs, key=lambda x: x['resource'])
+
+
+def format_number(value):
+    return f'{value:,}'.replace(',', ' ')
+
+
+def process_parameter_value(name, value):
+    type_suffix = {
+        'timelimit': 'h',
+        'hours': 'h',
+        'capacity': 'GB'
+    }
+    return f'{format_number(value)} {type_suffix[name]}'
+
+
+def process_parameters(params):
+    params = params.copy()
+    order = ['hours', 'timelimit', 'capacity']
+    ordered_params = OrderedDict()
+    for type in order:
+        if type in params.keys():
+            ordered_params[type] = process_parameter_value(type, params[type])
+            del params[type]
+    if params:
+        ordered_params.update(params)
+    return ordered_params
+
+
 def print_grant_info(data):
-    name, start, end, state, allocations, group, group_members = data
-    print(f"""Grant name    | {data[name]}
------------------------------------------------------------------------------
-Start date    | {data[start]}
-End date      | {data[end]}
------------------------------------------------------------------------------
-State         | {data[state]}
------------------------------------------------------------------------------
-Allocations   |    CPU      | timelimit {data[allocations][0].split()[-3]} hours {data[allocations][0].split()[-1].replace("}", "")}
-              |    GPU      | timelimit {data[allocations][1].split()[-3]} hours {data[allocations][1].split()[-1].replace("}", "")}
-              |   Storage   | capacity {data[allocations][2].split()[-1].replace("}", "")}
------------------------------------------------------------------------------
-Group name    | {data[group]}
-Group members | {''.join((f'{member} ' for member in data[group_members]))}
-""")
+    # print(json.dumps(data))
+    print(f"Grant: {data['name']}")
+    print(f" start: {data['start']}")
+    print(f" end: {data['end']}")
+    print(f" state: {data['state']}")
+    allocations = order_allocations(data['allocations'])
+    if allocations:
+        for al in allocations:
+            print(f" Allocation: {al['name']}, resource: {al['resource']}")
+            parameters = process_parameters(al['parameters'])
+            for key, value in parameters.items():
+                print(f'  {key}: {value}')
+            # print(f"  {', '.join(f'{key}: {value}' for (key, value) in parameters.items())}")
+    else:
+        print(' - No allocations')
+    print(f" Group: {data['group']}")
+    print(f"  members: {', '.join(sorted(data['group_members']))}")
 
 
 def main():
@@ -84,8 +118,11 @@ def main():
         sys.exit(0)
 
     data = get_data()
-    for grant in data:
+    for i in range(len(data)):
+        grant = data[i]
         print_grant_info(grant)
+        if i != len(data) - 1:
+            print('---')
 
 
 if __name__ == '__main__':
