@@ -31,7 +31,7 @@ VERSION = '0.1'
 BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
 USER = os.getenv('USER', os.getlogin())
-SERVICE = 'user/user_grants_info'
+SERVICE = 'user/grants_info'
 URL = BURSAR_URL + SERVICE
 
 
