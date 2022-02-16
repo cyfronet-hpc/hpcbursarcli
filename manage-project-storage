@@ -128,6 +128,8 @@ def synchronize_storage(group_grants):
             # group is not present in the system
             continue
         capacity = sum_storage(grants)
+        if capacity < 1:
+            capacity = 1
         gid = system_groups_gid[group]
         debug(f'group: {group}, capacity: {capacity}, gid: {gid}')
 
