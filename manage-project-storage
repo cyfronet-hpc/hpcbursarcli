@@ -101,7 +101,7 @@ def check_quota(gid):
     for line in stdout.split('\n'):
         if PROJECT_FS in line:
             parts = line.split()
-            quota = int(int(parts[4]) / 1024 / 1024)
+            quota = int(int(parts[3]) / 1024 / 1024)
             return quota
 
 
