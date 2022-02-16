@@ -16,6 +16,7 @@ Options:
 '''
 
 import os
+import stat
 import sys
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
@@ -139,7 +140,10 @@ def synchronize_storage(group_grants):
             if quota != capacity:
                 set_quota(gid, capacity)
         else:
-            os.mkdir(group_dir_path, MODE)
+            os.mkdir(group_dir_path)
+            os.chmod(group_dir_path, stat.S_ISGID
+                     | stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+                     | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP)
             os.chown(group_dir_path, -1, gid)
             set_project(group_dir_path, gid)
             set_quota(gid, capacity)
