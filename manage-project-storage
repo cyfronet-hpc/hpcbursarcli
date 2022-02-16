@@ -124,7 +124,7 @@ def synchronize_storage(group_grants):
 
     active_groups = {}
     for group, grants in group_grants.items():
-        if group in system_groups_gid.keys():
+        if group not in system_groups_gid.keys():
             # group is not present in the system
             continue
         capacity = sum_storage(grants)
