@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.9
 
-'''
+"""
 hpc-grants - Show available grant with details.
 
 Usage:
@@ -13,24 +13,19 @@ Options:
     -h --help   Show help.
     -v --verbose   Show additional info.
     -V --version   Show version.
-'''
+"""
 
+from hpc_grants_helper import *
 import os
 import stat
 import sys
+import subprocess
+import grp
+from docopt import docopt
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
-
-import requests
-import pymunge
-import subprocess
-import json
-import grp
-import datetime
-
-from docopt import docopt
 
 PROJECT_BASE = '/net/ascratch/groups/'
 PROJECT_FS = '/net/ascratch/'
@@ -39,11 +34,6 @@ LFS_PATH = '/usr/bin/lfs'
 MODE = 2770
 
 VERSION = '0.1'
-BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
-BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
-USER = os.getenv('USER', os.getlogin())
-SERVICE = 'admin/grants_group_info'
-URL = BURSAR_URL + SERVICE
 
 verbose = False
 
@@ -51,32 +41,6 @@ verbose = False
 def debug(text):
     if verbose:
         print(text)
-
-
-def generate_token(user, service):
-    user_service = user + ':' + service
-    bytes_user_service = str.encode(user_service)
-    with pymunge.MungeContext() as ctx:
-        user_service = ctx.encode(bytes_user_service)
-    return user_service
-
-
-def get_data():
-    user = USER
-    header = {
-        'x-auth-hpcbursar': generate_token(user, SERVICE)
-    }
-    response = requests.get(URL + '/', headers=header, verify=BURSAR_CERT_PATH)
-    if response.status_code == 403:
-        raise Exception('You are unauthorized to perform this request!')
-    elif response.status_code != 200:
-        raise Exception('Invalid response from server!')
-
-    try:
-        data = response.json()
-        return data
-    except Exception as e:
-        raise Exception('Unable to parse server\'s response!')
 
 
 def execute(cmd):
@@ -99,7 +63,7 @@ def sum_storage(grants):
 
 def check_quota(gid):
     cmd = [LFS_PATH, 'quota', '-p', str(gid), PROJECT_FS]
-    returncode, stdout, stderr = execute(cmd)
+    return_code, stdout, stderr = execute(cmd)
     for line in stdout.split('\n'):
         if PROJECT_FS in line:
             parts = line.split()
@@ -148,6 +112,7 @@ def synchronize_storage(group_grants):
             set_project(group_dir_path, gid)
             set_quota(gid, capacity)
 
+
 def is_grant_active(grant):
     # end = datetime.grant['end'] + datetime.timedelta(days=1)
     # start = datetime.grant['start']
@@ -156,6 +121,7 @@ def is_grant_active(grant):
         return True
     else:
         return False
+
 
 def main():
     args = docopt(__doc__)
