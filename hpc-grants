@@ -23,6 +23,7 @@ if env_lib_dir in os.environ.keys():
 from helper_functions import get_data
 from collections import OrderedDict
 from docopt import docopt
+import json
 
 
 VERSION = '0.1'
@@ -32,17 +33,21 @@ def order_allocations(allocs):
     return sorted(allocs, key=lambda x: x['resource'])
 
 
-def format_number(value):
-    return f'{value:,}'.replace(',', ' ')
+def format_number(value, name):
+    if name == 'used hours':
+        return f'{value:,.2f}'.replace(',', ' ')
+    else:
+        return f'{value:,}'.replace(',', ' ')
 
 
 def process_parameter_value(name, value):
     type_suffix = {
         'timelimit': 'h',
         'hours': 'h',
-        'capacity': 'GB'
+        'capacity': 'GB',
+        'used hours': 'h'
     }
-    return f'{format_number(value)} {type_suffix[name]}'
+    return f'{format_number(value, name)} {type_suffix[name]}'
 
 
 def process_parameters(params):
@@ -63,13 +68,22 @@ def print_grant_info(data):
     print(f" start: {data['start']}")
     print(f" end: {data['end']}")
     print(f" state: {data['state']}")
+
+    allocation_usages_dict = {}
+    for allocation_usage in data['allocations_usages']:
+        allocation_usages_dict[allocation_usage['name']] = allocation_usage
+
     allocations = order_allocations(data['allocations'])
     if allocations:
         for al in allocations:
             print(f" Allocation: {al['name']}, resource: {al['resource']}")
             parameters = process_parameters(al['parameters'])
-            for key, value in parameters.items():
-                print(f'    {key}: {value}')
+            print('    parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
+
+            if al['name'] in allocation_usages_dict.keys():
+                allocation_usage = allocation_usages_dict[al['name']]
+                consumed_resources = allocation_usage['summary']['resources']
+                print('    consumed resources: ' + ", ".join([f"{k}: {process_parameter_value('used hours', v)}" for k,v in consumed_resources.items()]))
     else:
         print('  - No allocations')
     print(f" Group: {data['group']}")
@@ -85,6 +99,7 @@ def main():
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
     for i in range(len(data)):
         grant = data[i]
+        # print(json.dumps(grant, indent=2))
         print_grant_info(grant)
         if i != len(data) - 1:
             print('---')
