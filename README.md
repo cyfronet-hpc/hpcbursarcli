@@ -1,6 +1,6 @@
 # HPCBursarCli
 
-Command-lines tools for interaction with HPCBursar.
+Command-line tools to interact with HPCBursar.
 
 # Installation requirements
 
