@@ -1,5 +1,10 @@
 #!/usr/bin/env python3.9
 
+# Copyright 2022 ACC Cyfronet AGH-UST
+
+# Licensed under the Apache License, Version 2.0,
+# copy of the license is available in the LICENSE file;
+
 """
 hpc-grants - Show available grant with details.
 
@@ -15,13 +20,12 @@ Options:
     -V --version   Show version.
 """
 
-from helper_functions import *
-import os
 import stat
 import sys
 import subprocess
 import grp
 from docopt import docopt
+from helper_functions import *
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():

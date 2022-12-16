@@ -1,5 +1,10 @@
 #!/usr/bin/env python3.9
 
+# Copyright 2022 ACC Cyfronet AGH-UST
+
+# Licensed under the Apache License, Version 2.0,
+# copy of the license is available in the LICENSE file;
+
 """
 hpc-grants - Show available grant with details.
 
@@ -14,17 +19,14 @@ Options:
 """
 import os
 import sys
+from collections import OrderedDict
+from docopt import docopt
+import json
+from helper_functions import get_data
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
-
-
-from helper_functions import get_data
-from collections import OrderedDict
-from docopt import docopt
-import json
-
 
 VERSION = '0.1'
 
@@ -83,7 +85,8 @@ def print_grant_info(data):
             if al['name'] in allocation_usages_dict.keys():
                 allocation_usage = allocation_usages_dict[al['name']]
                 consumed_resources = allocation_usage['summary']['resources']
-                print('    consumed resources: ' + ", ".join([f"{k}: {process_parameter_value('used hours', v)}" for k,v in consumed_resources.items()]))
+                print('    consumed resources: ' + ", ".join(
+                    [f"{k}: {process_parameter_value('used hours', v)}" for k, v in consumed_resources.items()]))
     else:
         print('  - No allocations')
     print(f" Group: {data['group']}")
