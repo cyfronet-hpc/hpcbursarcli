@@ -71,8 +71,6 @@ def get_data():
         'x-auth-hpcbursar': generate_token(user, SERVICE)
     }
     response = requests.get(URL + '/', headers=header, verify=BURSAR_CERT_PATH)
-    print(header)
-    print(URL)
     if response.status_code == 403:
         raise Exception('You are unauthorized to perform this request!')
     elif response.status_code != 200:
@@ -80,7 +78,6 @@ def get_data():
 
     try:
         data = response.json()
-        print(data)
         return data
     except Exception as e:
         raise Exception('Unable to parse server\'s response!')
@@ -99,7 +96,7 @@ def sum_storage(grants):
     for grant in grants:
         if 'allocations' in grant.keys():
             for allocation in grant['allocations']:
-                if allocation['resource'] == 'Storage':
+                if allocation['resource'] == 'storage':
                     sum += allocation['parameters']['capacity']
     return sum
 
@@ -133,7 +130,7 @@ def synchronize_storage(group_grants):
 
     for group, grants in group_grants.items():
         if group not in system_groups_gid.keys():
-            # group is not present in the system
+            debug(f'Group: {group} not present in the system!')
             continue
         capacity = sum_storage(grants)
         if capacity < 1:
