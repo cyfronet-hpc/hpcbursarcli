@@ -20,13 +20,15 @@ Options:
 import os
 import sys
 from collections import OrderedDict
-from docopt import docopt
-import json
-from helper_functions import get_data
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
+
+from docopt import docopt
+import json
+from helper_functions import get_data
+
 
 VERSION = '0.1'
 
