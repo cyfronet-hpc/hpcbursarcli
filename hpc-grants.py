@@ -69,7 +69,7 @@ def process_parameters(params):
 
 def print_grant_info(data):
     print(f"Grant: {data['name']}")
-    print(f" state: {data['state']}, start: {data['start']}, end:  end: {data['end']}")
+    print(f" status: {data['status']}, start: {data['start']}, end:  end: {data['end']}")
     allocation_usages_dict = {}
     for allocation_usage in data['allocations_usages']:
         allocation_usages_dict[allocation_usage['name']] = allocation_usage
@@ -78,7 +78,7 @@ def print_grant_info(data):
     if allocations:
         for al in allocations:
             print(f" Allocation: {al['name']}, resource: {al['resource']}")
-            print(f"  state: {al['state']}, start: {al['end']}, start: {al['end']},")
+            print(f"  status: {al['status']}, start: {al['end']}, start: {al['end']},")
             parameters = process_parameters(al['parameters'])
             print('  parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
 
