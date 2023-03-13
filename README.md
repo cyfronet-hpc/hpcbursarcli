@@ -10,10 +10,6 @@ Command-line tools to interact with HPCBursar.
 
 # Description of the project structure
 
-### helper_functions
-
-Helper functions that are used in `hpc-grants` and `manage-project-storage` files.
-
 ### hpc-grants
 
 File that shows available grants with their details.

@@ -26,8 +26,47 @@ if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
 
 from docopt import docopt
+import requests
+import pymunge
 import json
-from helper_functions import get_data
+
+BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
+BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
+USER = os.getenv('USER', os.getlogin())
+SERVICE = 'user/grants_info'
+URL = BURSAR_URL + SERVICE
+
+
+def generate_token(user, service):
+    user_service = user + ':' + service
+    bytes_user_service = str.encode(user_service)
+    with pymunge.MungeContext() as ctx:
+        token = ctx.encode(bytes_user_service)
+    return token
+
+
+def get_data():
+    user = USER
+    header = {
+        'x-auth-hpcbursar': generate_token(user, SERVICE)
+    }
+    try:
+        response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 403:
+            print('You are unauthorized to perform this request!')
+            sys.exit(1)
+        elif e.response.status_code != 200:
+            print("Invalid response from server!")
+            sys.exit(1)
+    except requests.exceptions.ConnectionError as e:
+        print("No connection")
+        sys.exit(1)
+    except Exception as e:
+        raise Exception('Unable to parse server\'s response!')
 
 
 VERSION = '0.1'
