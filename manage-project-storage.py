@@ -20,24 +20,34 @@ Options:
     -V --version   Show version.
 """
 
+import os
 import stat
 import sys
 import subprocess
 import grp
-from docopt import docopt
-from helper_functions import *
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
 
-PROJECT_BASE = '/net/ascratch/groups/'
-PROJECT_FS = '/net/ascratch/'
+from docopt import docopt
+import pymunge
+import requests
+import json
+import datetime
+
+PROJECT_BASE = '/net/pr2/projects/plgrid/'
+PROJECT_FS = '/net/pr2/'
 LFS_PATH = '/usr/bin/lfs'
 
 MODE = 2770
 
 VERSION = '0.1'
+BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
+BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
+USER = os.getenv('USER', 'root')
+SERVICE = 'admin/grants_group_info'
+URL = BURSAR_URL + SERVICE
 
 verbose = False
 
@@ -45,6 +55,35 @@ verbose = False
 def debug(text):
     if verbose:
         print(text)
+
+
+def generate_token(user, service):
+    user_service = user + ':' + service
+    bytes_user_service = str.encode(user_service)
+    with pymunge.MungeContext() as ctx:
+        user_service = ctx.encode(bytes_user_service)
+    return user_service
+
+
+def get_data():
+    user = USER
+    header = {
+        'x-auth-hpcbursar': generate_token(user, SERVICE)
+    }
+    response = requests.get(URL + '/', headers=header, verify=BURSAR_CERT_PATH)
+    print(header)
+    print(URL)
+    if response.status_code == 403:
+        raise Exception('You are unauthorized to perform this request!')
+    elif response.status_code != 200:
+        raise Exception('Invalid response from server!')
+
+    try:
+        data = response.json()
+        print(data)
+        return data
+    except Exception as e:
+        raise Exception('Unable to parse server\'s response!')
 
 
 def execute(cmd):
