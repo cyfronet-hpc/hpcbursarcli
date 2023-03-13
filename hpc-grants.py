@@ -117,7 +117,7 @@ def print_grant_info(data):
     if allocations:
         for al in allocations:
             print(f" Allocation: {al['name']}, resource: {al['resource']}")
-            print(f"  status: {al['status']}, start: {al['end']}, start: {al['end']},")
+            print(f"  status: {al['status']}, start: {al['start']}, start: {al['end']},")
             parameters = process_parameters(al['parameters'])
             print('  parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
 
