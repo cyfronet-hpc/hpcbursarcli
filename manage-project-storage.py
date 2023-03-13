@@ -157,7 +157,7 @@ def is_grant_active(grant):
     # end = datetime.grant['end'] + datetime.timedelta(days=1)
     # start = datetime.grant['start']
     # if end > datetime.datetime.now().date() and start < datetime.datetime.now().date() and 'grant_active' in grant['state']:
-    if 'accepted' in grant['status']:
+    if 'accepted' in grant['status'] or 'active' in grant['status']:
         return True
     else:
         return False
