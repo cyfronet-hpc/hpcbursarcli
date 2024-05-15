@@ -108,7 +108,7 @@ def process_parameters(params):
 
 def print_grant_info(data):
     print(f"Grant: {data['name']}")
-    print(f" status: {data['status']}, start: {data['start']}, end: {data['end']}")
+    print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
     allocation_usages_dict = {}
     for allocation_usage in data['allocations_usages']:
         allocation_usages_dict[allocation_usage['name']] = allocation_usage
@@ -116,20 +116,20 @@ def print_grant_info(data):
     allocations = order_allocations(data['allocations'])
     if allocations:
         for al in allocations:
-            print(f" Allocation: {al['name']}, resource: {al['resource']}")
-            print(f"  status: {al['status']}, start: {al['start']}, end: {al['end']},")
+            print(f"  Allocation: {al['name']}, resource: {al['resource']}")
+            print(f"   status: {al['status']}, start: {al['start']}, end: {al['end']},")
             parameters = process_parameters(al['parameters'])
-            print('  parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
+            print('   parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
 
             if al['name'] in allocation_usages_dict.keys():
                 allocation_usage = allocation_usages_dict[al['name']]
                 consumed_resources = allocation_usage['summary']['resources']
-                print('  consumed resources: ' + ", ".join(
+                print('   consumed resources: ' + ", ".join(
                     [f"{k}: {process_parameter_value('used hours', v)}" for k, v in consumed_resources.items()]))
     else:
         print('  - No allocations')
-    print(f" Group: {data['group']}")
-    print(f"  members: {', '.join(sorted(data['group_members']))}")
+    print(f"  Group: {data['group']}")
+    print(f"   members: {', '.join(sorted(data['group_members']))}")
 
 
 def main():
