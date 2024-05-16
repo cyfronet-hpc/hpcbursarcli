@@ -12,10 +12,16 @@ Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
+    hpc-grants -a | --all
+    hpc-grants -s | --short
+    hpc-grants -l | --last
 
 Options:
     -h --help   Show help.
     -v --version   Show version.
+    -a --all    Show all grants.
+    -s --short  Show nonverbose mode.
+    -l --last   Show grants with end date no more than 3 moths ago.
 """
 import os
 import sys
@@ -25,6 +31,7 @@ env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
 
+from datetime import datetime, timedelta
 from docopt import docopt
 import requests
 import pymunge
@@ -106,6 +113,14 @@ def process_parameters(params):
     return ordered_params
 
 
+def print_grant_short_info(data):
+    print(f"Grant: {data['name']}")
+    print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
+    print(f"  Group: {data['group']}")
+    print(f"   members: {', '.join(sorted(data['group_members']))}")
+
+
+
 def print_grant_info(data):
     print(f"Grant: {data['name']}")
     print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
@@ -134,17 +149,52 @@ def print_grant_info(data):
 
 def main():
     args = docopt(__doc__)
+
     if args['--version']:
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
-    data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-    for i in range(len(data)):
-        grant = data[i]
-        # print(json.dumps(grant, indent=2))
-        print_grant_info(grant)
-        if i != len(data) - 1:
-            print('---')
+    elif args['--all']:
+        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
+        for i in range(len(data)):
+            grant = data[i]
+            # print(json.dumps(grant, indent=2))
+            print_grant_info(grant)
+            if i != len(data) - 1:
+                print('------------------------------------------------------')
+
+    elif args['--short']:
+        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
+        for i in range(len(data)):
+            grant = data[i]
+            print_grant_short_info(grant)
+            if i != len(data) - 1:
+                print('---')
+
+    elif args['--last']:
+        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
+        for i in range(len(data)):
+            grant = data[i]
+            date_str = grant['end']
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            present = datetime.now()
+            last3m = present - timedelta(days=90)
+            if date_obj >= last3m:
+                print(date_obj)
+                print(last3m)
+                print_grant_info(grant)
+                if i != len(data) - 1:
+                    print('---')
+
+
+    else:
+        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
+        for i in range(len(data)):
+            grant = data[i]
+            if grant['status'] == "active":
+                print_grant_info(grant)
+                if i != len(data) - 1:
+                    print('---')
 
 
 if __name__ == '__main__':
