@@ -180,8 +180,8 @@ def main():
             present = datetime.now()
             last3m = present - timedelta(days=90)
             if date_obj >= last3m:
-                print(date_obj)
-                print(last3m)
+                #print(date_obj)
+                #print(last3m)
                 print_grant_info(grant)
                 if i != len(data) - 1:
                     print('---')
