@@ -21,7 +21,7 @@ Options:
     -v --version   Show version.
     -a --all    Show all grants.
     -s --short  Show nonverbose mode.
-    -l --last   Show grants with end date no more than 3 moths ago.
+    -l --last   Show grants with end date no older than 1 year and 1 month ago.
 """
 import os
 import sys
@@ -178,7 +178,7 @@ def main():
             date_str = grant['end']
             date_obj = datetime.strptime(date_str, '%Y-%m-%d')
             present = datetime.now()
-            last3m = present - timedelta(days=90)
+            last3m = present - timedelta(days=395)
             if date_obj >= last3m:
                 #print(date_obj)
                 #print(last3m)
