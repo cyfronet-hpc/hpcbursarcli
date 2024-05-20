@@ -6,13 +6,14 @@
 # copy of the license is available in the LICENSE file;
 
 """
-hpc-grants - Show active grants with details.
+hpc-grants - Show only active grants with details.
 
 Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-a | --all | -s | --short | -l | --last]
+    hpc-grants -s | --short [-a | --all | -l | --last]
+    hpc-grants [-a | --all | -l | --last]
 
 Options:
     -h --help   Show help.
@@ -157,17 +158,23 @@ def main():
         for i in range(len(data)):
             grant = data[i]
             # print(json.dumps(grant, indent=2))
-            print_grant_info(grant)
-            if i != len(data) - 1:
-                print('------------------------------------------------------')
+            if args['--short']:
+                print_grant_short_info(grant)
+                if i != len(data) - 1:
+                    print('------------------------------------------------------')
+            else:
+                print_grant_info(grant)
+                if i != len(data) - 1:
+                    print('------------------------------------------------------')
 
     elif args['--short']:
         data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
         for i in range(len(data)):
             grant = data[i]
-            print_grant_short_info(grant)
-            if i != len(data) - 1:
-                print('---')
+            if grant['status'] == "active":
+                print_grant_short_info(grant)
+                if i != len(data) - 1:
+                    print('------------------------------------------------------')
 
     elif args['--last']:
         data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
@@ -180,9 +187,14 @@ def main():
             if date_obj >= last3m:
                 #print(date_obj)
                 #print(last3m)
-                print_grant_info(grant)
-                if i != len(data) - 1:
-                    print('---')
+                if args['--short']:
+                    print_grant_short_info(grant)
+                    if i != len(data) - 1:
+                        print('------------------------------------------------------')
+                else:
+                    print_grant_info(grant)
+                    if i != len(data) - 1:
+                        print('------------------------------------------------------')
 
 
     else:
@@ -192,7 +204,7 @@ def main():
             if grant['status'] == "active":
                 print_grant_info(grant)
                 if i != len(data) - 1:
-                    print('---')
+                    print('------------------------------------------------------')
 
 
 if __name__ == '__main__':
