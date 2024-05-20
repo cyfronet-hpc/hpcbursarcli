@@ -6,15 +6,13 @@
 # copy of the license is available in the LICENSE file;
 
 """
-hpc-grants - Show available grant with details.
+hpc-grants - Show active grants with details.
 
 Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants -a | --all
-    hpc-grants -s | --short
-    hpc-grants -l | --last
+    hpc-grants [-a | --all | -s | --short | -l | --last]
 
 Options:
     -h --help   Show help.
