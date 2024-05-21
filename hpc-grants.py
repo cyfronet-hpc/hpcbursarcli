@@ -164,10 +164,9 @@ def main():
         if args['--all']:
             if args['--short']:
                 print_grant_short_info(grant)
-                line_print(i, data)
             else:
                 print_grant_info(grant)
-                line_print(i, data)
+            line_print(i, data)
 
         elif args['--short']:
                 if grant['status'] == "active":
@@ -182,10 +181,9 @@ def main():
                 if date_obj >= last3m:
                     if args['--short']:
                         print_grant_short_info(grant)
-                        line_print(i, data)
                     else:
                         print_grant_info(grant)
-                        line_print(i, data)
+                    line_print(i, data)
 
         else:
                 if grant['status'] == "active":
