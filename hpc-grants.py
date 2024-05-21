@@ -12,8 +12,7 @@ Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants -s | --short [-a | --all | -l | --last]
-    hpc-grants [-a | --all | -l | --last]
+    hpc-grants [-s | --short] [-a | --all | -l | --last]
 
 Options:
     -h --help   Show help.
@@ -145,6 +144,10 @@ def print_grant_info(data):
     print(f"  Group: {data['group']}")
     print(f"   members: {', '.join(sorted(data['group_members']))}")
 
+def line_print(i, data):
+    if i != len(data) - 1:
+        print('-------------------------------------------------------')
+
 
 def main():
     args = docopt(__doc__)
@@ -153,58 +156,41 @@ def main():
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
-    elif args['--all']:
-        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-        for i in range(len(data)):
-            grant = data[i]
-            # print(json.dumps(grant, indent=2))
+    
+    data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
+    for i in range(len(data)):
+        grant = data[i]
+
+        if args['--all']:
             if args['--short']:
                 print_grant_short_info(grant)
-                if i != len(data) - 1:
-                    print('------------------------------------------------------')
+                line_print(i, data)
             else:
                 print_grant_info(grant)
-                if i != len(data) - 1:
-                    print('------------------------------------------------------')
+                line_print(i, data)
 
-    elif args['--short']:
-        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-        for i in range(len(data)):
-            grant = data[i]
-            if grant['status'] == "active":
-                print_grant_short_info(grant)
-                if i != len(data) - 1:
-                    print('------------------------------------------------------')
-
-    elif args['--last']:
-        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-        for i in range(len(data)):
-            grant = data[i]
-            date_str = grant['end']
-            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-            present = datetime.now()
-            last3m = present - timedelta(days=395)
-            if date_obj >= last3m:
-                #print(date_obj)
-                #print(last3m)
-                if args['--short']:
+        elif args['--short']:
+                if grant['status'] == "active":
                     print_grant_short_info(grant)
-                    if i != len(data) - 1:
-                        print('------------------------------------------------------')
-                else:
+                    line_print(i, data)
+
+        elif args['--last']:
+                date_str = grant['end']
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+                present = datetime.now()
+                last3m = present - timedelta(days=395)
+                if date_obj >= last3m:
+                    if args['--short']:
+                        print_grant_short_info(grant)
+                        line_print(i, data)
+                    else:
+                        print_grant_info(grant)
+                        line_print(i, data)
+
+        else:
+                if grant['status'] == "active":
                     print_grant_info(grant)
-                    if i != len(data) - 1:
-                        print('------------------------------------------------------')
-
-
-    else:
-        data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-        for i in range(len(data)):
-            grant = data[i]
-            if grant['status'] == "active":
-                print_grant_info(grant)
-                if i != len(data) - 1:
-                    print('------------------------------------------------------')
+                    line_print(i, data)
 
 
 if __name__ == '__main__':
