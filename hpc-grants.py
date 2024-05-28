@@ -161,29 +161,25 @@ def main():
     for i in range(len(data)):
         grant = data[i]
 
-        if args['--all']:
-            if args['--short']:
+        if args['--short']:
+                #if grant['status'] == "active":
+                #    print_grant_short_info(grant)
+                #    line_print(i, data)
                 print_grant_short_info(grant)
-            else:
-                print_grant_info(grant)
+                line_print(i, data)
+
+        elif args['--all']:
+            print_grant_info(grant)
             line_print(i, data)
 
-        elif args['--short']:
-                if grant['status'] == "active":
-                    print_grant_short_info(grant)
-                    line_print(i, data)
 
         elif args['--last']:
                 date_str = grant['end']
                 date_obj = datetime.strptime(date_str, '%Y-%m-%d')
                 present = datetime.now()
                 last3m = present - timedelta(days=395)
-                if date_obj >= last3m:
-                    if args['--short']:
-                        print_grant_short_info(grant)
-                    else:
-                        print_grant_info(grant)
-                    line_print(i, data)
+                print_grant_info(grant)
+                line_print(i, data)
 
         else:
                 if grant['status'] == "active":
