@@ -148,6 +148,22 @@ def line_print(i, data):
     if i != len(data) - 1:
         print('-------------------------------------------------------')
 
+def last(grant):
+    date_str = grant['end']
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    present = datetime.now()
+    last3m = present - timedelta(days=395)
+    return True
+
+def active(grant):
+    if grant['status'] == "active":
+        return True
+    else:
+        return False
+
+def all(grant):
+    return True
+
 
 def main():
     args = docopt(__doc__)
@@ -156,35 +172,30 @@ def main():
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
-    
+
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
+    filtered_grants = data
+
     for i in range(len(data)):
-        grant = data[i]
+        #grant = data[i]
 
-        if args['--short']:
-                #if grant['status'] == "active":
-                #    print_grant_short_info(grant)
-                #    line_print(i, data)
-                print_grant_short_info(grant)
-                line_print(i, data)
-
-        elif args['--all']:
-            print_grant_info(grant)
-            line_print(i, data)
-
+        if args['--all']:
+            filtered_grants = list(filter(all, data))
 
         elif args['--last']:
-                date_str = grant['end']
-                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                present = datetime.now()
-                last3m = present - timedelta(days=395)
-                print_grant_info(grant)
-                line_print(i, data)
+            filtered_grants = list(filter(last, data))
 
         else:
-                if grant['status'] == "active":
-                    print_grant_info(grant)
-                    line_print(i, data)
+            filtered_grants = list(filter(active, data))
+        
+    k = 0
+    for j in filtered_grants:
+        if args['--short']:
+            print_grant_short_info(j)
+        else:
+            print_grant_info(j)
+        line_print(k, filtered_grants)
+        k = k+1
 
 
 if __name__ == '__main__':
