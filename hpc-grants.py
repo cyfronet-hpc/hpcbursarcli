@@ -144,9 +144,8 @@ def print_grant_info(data):
     print(f"  Group: {data['group']}")
     print(f"   members: {', '.join(sorted(data['group_members']))}")
 
-def line_print(i, data):
-    if i != len(data) - 1:
-        print('-------------------------------------------------------')
+def line_print():
+    print('-------------------------------------------------------')
 
 def last(grant):
     date_str = grant['end']
@@ -174,28 +173,24 @@ def main():
 
 
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-    filtered_grants = data
 
-    for i in range(len(data)):
-        #grant = data[i]
 
-        if args['--all']:
-            filtered_grants = list(filter(all, data))
+    if args['--all']:
+        filtered_grants = list(filter(all, data))
 
-        elif args['--last']:
-            filtered_grants = list(filter(last, data))
+    elif args['--last']:
+        filtered_grants = list(filter(last, data))
 
-        else:
-            filtered_grants = list(filter(active, data))
+    else:
+        filtered_grants = list(filter(active, data))
         
-    k = 0
     for j in filtered_grants:
         if args['--short']:
             print_grant_short_info(j)
         else:
             print_grant_info(j)
-        line_print(k, filtered_grants)
-        k = k+1
+        if j != filtered_grants[-1]:
+            line_print()
 
 
 if __name__ == '__main__':
