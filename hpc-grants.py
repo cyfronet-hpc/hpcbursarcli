@@ -6,16 +6,20 @@
 # copy of the license is available in the LICENSE file;
 
 """
-hpc-grants - Show available grant with details.
+hpc-grants - Show only active grants with details.
 
 Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
+    hpc-grants [-s | --short] [-a | --all | -l | --last]
 
 Options:
     -h --help   Show help.
     -v --version   Show version.
+    -a --all    Show all grants.
+    -s --short  Show nonverbose mode.
+    -l --last   Show grants with end date no older than 1 year and 1 month ago.
 """
 import os
 import sys
@@ -25,6 +29,7 @@ env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
 
+from datetime import datetime, timedelta
 from docopt import docopt
 import requests
 import pymunge
@@ -106,9 +111,16 @@ def process_parameters(params):
     return ordered_params
 
 
+def print_grant_short_info(data):
+    print(f"Grant: {data['name']}")
+    print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
+    print(f"  Group: {data['group']}")
+    print(f"   members: {', '.join(sorted(data['group_members']))}")
+
+
 def print_grant_info(data):
     print(f"Grant: {data['name']}")
-    print(f" status: {data['status']}, start: {data['start']}, end: {data['end']}")
+    print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
     allocation_usages_dict = {}
     for allocation_usage in data['allocations_usages']:
         allocation_usages_dict[allocation_usage['name']] = allocation_usage
@@ -116,35 +128,70 @@ def print_grant_info(data):
     allocations = order_allocations(data['allocations'])
     if allocations:
         for al in allocations:
-            print(f" Allocation: {al['name']}, resource: {al['resource']}")
-            print(f"  status: {al['status']}, start: {al['start']}, end: {al['end']},")
+            print(f"  Allocation: {al['name']}, resource: {al['resource']}")
+            print(f"   status: {al['status']}, start: {al['start']}, end: {al['end']},")
             parameters = process_parameters(al['parameters'])
-            print('  parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
+            print('   parameters: ' + ", ".join([f'{key}: {value}' for key, value in parameters.items()]))
 
             if al['name'] in allocation_usages_dict.keys():
                 allocation_usage = allocation_usages_dict[al['name']]
                 consumed_resources = allocation_usage['summary']['resources']
-                print('  consumed resources: ' + ", ".join(
+                print('   consumed resources: ' + ", ".join(
                     [f"{k}: {process_parameter_value('used hours', v)}" for k, v in consumed_resources.items()]))
     else:
         print('  - No allocations')
-    print(f" Group: {data['group']}")
-    print(f"  members: {', '.join(sorted(data['group_members']))}")
+    print(f"  Group: {data['group']}")
+    print(f"   members: {', '.join(sorted(data['group_members']))}")
+
+
+def line_print():
+    print('-------------------------------------------------------')
+
+
+def last(grant):
+    date_str = grant['end']
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    present = datetime.now()
+    last3m = present - timedelta(days=395)
+    return True
+
+
+def active(grant):
+    if grant['status'] == "active":
+        return True
+    else:
+        return False
+
+
+def all(grant):
+    return True
 
 
 def main():
     args = docopt(__doc__)
+
     if args['--version']:
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-    for i in range(len(data)):
-        grant = data[i]
-        # print(json.dumps(grant, indent=2))
-        print_grant_info(grant)
-        if i != len(data) - 1:
-            print('---')
+
+    if args['--all']:
+        filtered_grants = list(filter(all, data))
+
+    elif args['--last']:
+        filtered_grants = list(filter(last, data))
+
+    else:
+        filtered_grants = list(filter(active, data))
+
+    for j in filtered_grants:
+        if args['--short']:
+            print_grant_short_info(j)
+        else:
+            print_grant_info(j)
+        if j != filtered_grants[-1]:
+            line_print()
 
 
 if __name__ == '__main__':
