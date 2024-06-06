@@ -118,7 +118,6 @@ def print_grant_short_info(data):
     print(f"   members: {', '.join(sorted(data['group_members']))}")
 
 
-
 def print_grant_info(data):
     print(f"Grant: {data['name']}")
     print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
@@ -144,8 +143,10 @@ def print_grant_info(data):
     print(f"  Group: {data['group']}")
     print(f"   members: {', '.join(sorted(data['group_members']))}")
 
+
 def line_print():
     print('-------------------------------------------------------')
+
 
 def last(grant):
     date_str = grant['end']
@@ -154,11 +155,13 @@ def last(grant):
     last3m = present - timedelta(days=395)
     return True
 
+
 def active(grant):
     if grant['status'] == "active":
         return True
     else:
         return False
+
 
 def all(grant):
     return True
@@ -171,9 +174,7 @@ def main():
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
-
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
-
 
     if args['--all']:
         filtered_grants = list(filter(all, data))
@@ -183,7 +184,7 @@ def main():
 
     else:
         filtered_grants = list(filter(active, data))
-        
+
     for j in filtered_grants:
         if args['--short']:
             print_grant_short_info(j)
