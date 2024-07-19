@@ -104,6 +104,7 @@ def sum_storage(grants):
 def check_quota(gid):
     cmd = [LFS_PATH, 'quota', '-p', str(gid), PROJECT_FS]
     return_code, stdout, stderr = execute(cmd)
+    stdout = stdout.replace(PROJECT_FS + '\n', PROJECT_FS)
     for line in stdout.split('\n'):
         if PROJECT_FS in line:
             parts = line.split()
