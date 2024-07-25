@@ -35,6 +35,10 @@ import requests
 import pymunge
 import json
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
 BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
 USER = os.getenv('USER', os.getlogin())
@@ -56,7 +60,8 @@ def get_data():
         'x-auth-hpcbursar': generate_token(user, SERVICE)
     }
     try:
-        response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
+        response = requests.get(URL + '/' + user, headers=header, verify=False)
+        #response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
         response.raise_for_status()
         data = response.json()
         return data
