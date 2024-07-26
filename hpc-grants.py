@@ -176,12 +176,7 @@ def all(grant):
     return True
 
 
-
 def allocations(data):
-    #allocation_usages_dict = {}
-    #for allocation_usage in data['allocations_usages']:
-    #    allocation_usages_dict[allocation_usage['name']] = allocation_usage
-
     allocations = order_allocations(data['allocations'])
     if allocations:
         return True
@@ -212,6 +207,7 @@ def main():
 
     else:
         filtered_grants = list(filter(active, filter(allocations, data)))
+
 
     for j in filtered_grants:
         if args['--short']:
