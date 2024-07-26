@@ -26,6 +26,7 @@ Options:
 """
 import os
 import sys
+import itertools
 from collections import OrderedDict
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
@@ -33,6 +34,7 @@ if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
 
 from datetime import datetime, timedelta
+from itertools import filterfalse
 from docopt import docopt
 import requests
 import pymunge
@@ -173,22 +175,8 @@ def active(grant):
     else:
         return False
 
-def inactive(grant):
-    if grant['status'] != "active":
-        return True
-    else:
-        return False
-
 def all(grant):
     return True
-
-def empty(data):
-    allocations = order_allocations(data['allocations'])
-    if allocations:
-        return False
-    else:
-        return True
-
 
 def allocations(data):
     allocations = order_allocations(data['allocations'])
@@ -214,10 +202,10 @@ def main():
         filtered_grants = list(filter(all, data))
 
     elif args['--empty']:
-        filtered_grants = list(filter(empty, data))
+        filtered_grants = list(filterfalse(allocations, data))
 
     elif (args['--inactive']):
-        filtered_grants = list(filter(inactive, filter(allocations, data)))
+        filtered_grants = list(filterfalse(active, filter(allocations, data)))
 
     elif args['--active']:
         filtered_grants = list(filter(active, filter(allocations, data)))
