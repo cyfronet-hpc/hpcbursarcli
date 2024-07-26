@@ -6,20 +6,22 @@
 # copy of the license is available in the LICENSE file;
 
 """
-hpc-grants - Show only active grants with details.
+hpc-grants - Show grants on current cluster.
 
 Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] [-a | --all | -l | --last | -o | --other]
+    hpc-grants [-s | --short] ([-a | --active | -e | --empty] [-l | --last | -o | --all | -i | --inactive])
 
 Options:
     -h --help       Show help.
     -v --version    Show version.
-    -a --all        Show all grants.
+    -a --active     Show active grants.
+    -i --inactive   Show inactive grants.
     -s --short      Show nonverbose mode.
-    -o --other      Show grants on other resources.
+    -o --all        Show all grants on each cluster.
+    -e --empty      Show grants on other clusters.
     -l --last       Show grants with end date no older than 1 year and 1 month ago.
 """
 import os
@@ -171,9 +173,21 @@ def active(grant):
     else:
         return False
 
+def inactive(grant):
+    if grant['status'] != "active":
+        return True
+    else:
+        return False
 
 def all(grant):
     return True
+
+def empty(data):
+    allocations = order_allocations(data['allocations'])
+    if allocations:
+        return False
+    else:
+        return True
 
 
 def allocations(data):
@@ -196,17 +210,23 @@ def main():
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
 
     
-    if (args['--all']):
-        filtered_grants = list(filter(all, filter(allocations, data)))
-
-    elif args['--other']:
+    if args['--all']:
         filtered_grants = list(filter(all, data))
+
+    elif args['--empty']:
+        filtered_grants = list(filter(empty, data))
+
+    elif (args['--inactive']):
+        filtered_grants = list(filter(inactive, filter(allocations, data)))
+
+    elif args['--active']:
+        filtered_grants = list(filter(active, filter(allocations, data)))
 
     elif args['--last']:
         filtered_grants = list(filter(last, filter(allocations, data)))
 
     else:
-        filtered_grants = list(filter(active, filter(allocations, data)))
+        filtered_grants = list(filter(allocations, data))
 
 
     for j in filtered_grants:
