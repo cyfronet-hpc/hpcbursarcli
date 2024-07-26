@@ -12,14 +12,15 @@ Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] [-a | --all | -l | --last]
+    hpc-grants [-s | --short] [-a | --all | -l | --last | -o | --other]
 
 Options:
-    -h --help   Show help.
-    -v --version   Show version.
-    -a --all    Show all grants.
-    -s --short  Show nonverbose mode.
-    -l --last   Show grants with end date no older than 1 year and 1 month ago.
+    -h --help       Show help.
+    -v --version    Show version.
+    -a --all        Show all grants.
+    -s --short      Show nonverbose mode.
+    -o --other      Show grants on other resources.
+    -l --last       Show grants with end date no older than 1 year and 1 month ago.
 """
 import os
 import sys
@@ -157,8 +158,11 @@ def last(grant):
     date_str = grant['end']
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
     present = datetime.now()
-    last3m = present - timedelta(days=395)
-    return True
+    last1r = present - timedelta(days=395)
+    if (date_obj > last1r):
+        return True
+    else:
+        return False
 
 
 def active(grant):
@@ -172,6 +176,20 @@ def all(grant):
     return True
 
 
+
+def allocations(data):
+    #allocation_usages_dict = {}
+    #for allocation_usage in data['allocations_usages']:
+    #    allocation_usages_dict[allocation_usage['name']] = allocation_usage
+
+    allocations = order_allocations(data['allocations'])
+    if allocations:
+        return True
+    else:
+        return False
+
+
+
 def main():
     args = docopt(__doc__)
 
@@ -179,16 +197,21 @@ def main():
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
+
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
 
-    if args['--all']:
+    
+    if (args['--all']):
+        filtered_grants = list(filter(all, filter(allocations, data)))
+
+    elif args['--other']:
         filtered_grants = list(filter(all, data))
 
     elif args['--last']:
-        filtered_grants = list(filter(last, data))
+        filtered_grants = list(filter(last, filter(allocations, data)))
 
     else:
-        filtered_grants = list(filter(active, data))
+        filtered_grants = list(filter(active, filter(allocations, data)))
 
     for j in filtered_grants:
         if args['--short']:
