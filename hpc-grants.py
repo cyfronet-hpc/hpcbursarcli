@@ -12,7 +12,7 @@ Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] [-a | --active | -e | --empty | -l | --last | -o | --all | -i | --inactive]
+    hpc-grants [-s | --short] ([-a | --active | -e | --empty ] [ -l | --last | -o | --all | -i | --inactive])
 
 Options:
     -h --help       Show help.
