@@ -12,7 +12,7 @@ Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] ([-a | --active | -e | --empty] [-l | --last | -o | --all | -i | --inactive])
+    hpc-grants [-s | --short] [-a | --active | -e | --empty | -l | --last | -o | --all | -i | --inactive]
 
 Options:
     -h --help       Show help.
@@ -197,12 +197,16 @@ def main():
 
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
 
-    
+
     if args['--all']:
         filtered_grants = list(filter(all, data))
 
     elif args['--empty']:
         filtered_grants = list(filterfalse(allocations, data))
+
+    elif (args['--active'] and args['--inactive']):
+        filtered_grants = list(filter(active, filter(allocations, data))) + list(filterfalse(active, filter(allocations, data)))
+        # active and inactive grants on current cluster, not the same as all grants
 
     elif (args['--inactive']):
         filtered_grants = list(filterfalse(active, filter(allocations, data)))
@@ -215,7 +219,7 @@ def main():
 
     else:
         filtered_grants = list(filter(allocations, data))
-
+    
 
     for j in filtered_grants:
         if args['--short']:
