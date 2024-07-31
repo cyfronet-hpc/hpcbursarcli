@@ -12,7 +12,7 @@ Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] [-a | --active | -i | --inactive ] [ -e | --empty ] [ -e | --empty ] [ -e | --full ]
+    hpc-grants [-s | --short] [-a | --active | -i | --inactive ] [ -e | --empty ] [ -o | --old ]
 
 Options:
     -h --help       Show help.
@@ -21,10 +21,10 @@ Options:
 
     -a --active     Show only active grants.
     -i --inactive   Show only inactive grants.
-    -e --empty      Show grants without resource allocations on this cluster.
-    -o --old        Show grants older than 1 year.
-    -f --full       Show a complete list of grants (implies -e, -o).
+    -e --empty      Additionally show grants without resource allocations on this cluster.
+    -o --older      Additionally show grants older than 1 year.
 """
+
 import os
 import sys
 import itertools
@@ -206,10 +206,10 @@ def main():
         filtered_grants = list(filterfalse(active, filtered_grants))
 
     # negative filters
-    if not args['--empty'] or args['--full']:
+    if not args['--empty']:
         filtered_grants = list(filter(has_allocations, filtered_grants))
 
-    if not args['--old'] or args['--full']:
+    if not args['--older']:
         filtered_grants = list(filter(last, filtered_grants))
 
     for j in filtered_grants:
