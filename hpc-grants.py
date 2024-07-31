@@ -6,23 +6,28 @@
 # copy of the license is available in the LICENSE file;
 
 """
-hpc-grants - Show only active grants with details.
+hpc-grants - Show latest grants with resource allocations on the cluster.
 
 Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] [-a | --all | -l | --last]
+    hpc-grants [-s | --short] [-a | --active | -i | --inactive ] [ -e | --empty ] [ -o | --old ]
 
 Options:
-    -h --help   Show help.
-    -v --version   Show version.
-    -a --all    Show all grants.
-    -s --short  Show nonverbose mode.
-    -l --last   Show grants with end date no older than 1 year and 1 month ago.
+    -h --help       Show help.
+    -v --version    Show version.
+    -s --short      Print grant information in short mode.
+
+    -a --active     Show only active grants.
+    -i --inactive   Show only inactive grants.
+    -e --empty      Additionally show grants without resource allocations on this cluster.
+    -o --old      Additionally show grants older than 1 year.
 """
+
 import os
 import sys
+import itertools
 from collections import OrderedDict
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
@@ -30,10 +35,15 @@ if env_lib_dir in os.environ.keys():
     sys.path.append(os.environ[env_lib_dir])
 
 from datetime import datetime, timedelta
+from itertools import filterfalse
 from docopt import docopt
 import requests
 import pymunge
 import json
+
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
@@ -56,7 +66,8 @@ def get_data():
         'x-auth-hpcbursar': generate_token(user, SERVICE)
     }
     try:
-        response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
+        response = requests.get(URL + '/' + user, headers=header, verify=False)
+        # response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
         response.raise_for_status()
         data = response.json()
         return data
@@ -148,12 +159,17 @@ def line_print():
     print('-------------------------------------------------------')
 
 
+# Filter functions
+
 def last(grant):
     date_str = grant['end']
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
     present = datetime.now()
-    last3m = present - timedelta(days=395)
-    return True
+    last1r = present - timedelta(days=395)
+    if (date_obj > last1r):
+        return True
+    else:
+        return False
 
 
 def active(grant):
@@ -163,8 +179,12 @@ def active(grant):
         return False
 
 
-def all(grant):
-    return True
+def has_allocations(data):
+    allocations = order_allocations(data['allocations'])
+    if allocations:
+        return True
+    else:
+        return False
 
 
 def main():
@@ -176,14 +196,21 @@ def main():
 
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
 
-    if args['--all']:
-        filtered_grants = list(filter(all, data))
+    filtered_grants = data
 
-    elif args['--last']:
-        filtered_grants = list(filter(last, data))
+    # positive filters
+    if args['--active']:
+        filtered_grants = list(filter(active, filtered_grants))
 
-    else:
-        filtered_grants = list(filter(active, data))
+    if args['--inactive']:
+        filtered_grants = list(filterfalse(active, filtered_grants))
+
+    # negative filters
+    if not args['--empty']:
+        filtered_grants = list(filter(has_allocations, filtered_grants))
+
+    if not args['--old']:
+        filtered_grants = list(filter(last, filtered_grants))
 
     for j in filtered_grants:
         if args['--short']:
