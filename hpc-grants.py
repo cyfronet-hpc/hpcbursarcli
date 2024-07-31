@@ -6,23 +6,24 @@
 # copy of the license is available in the LICENSE file;
 
 """
-hpc-grants - Show grants on current cluster.
+hpc-grants - Show latest grants with resource allocations on the cluster.
 
 Usage:
     hpc-grants
     hpc-grants -h | --help
     hpc-grants -v | --version
-    hpc-grants [-s | --short] ([-a | --active | -e | --empty ] [ -l | --last | -o | --all | -i | --inactive])
+    hpc-grants [-s | --short] [-a | --active | -i | --inactive ] [ -e | --empty ] [ -e | --empty ] [ -e | --full ]
 
 Options:
     -h --help       Show help.
     -v --version    Show version.
-    -a --active     Show active grants.
-    -i --inactive   Show inactive grants.
-    -s --short      Show nonverbose mode.
-    -o --all        Show all grants on each cluster.
-    -e --empty      Show grants on other clusters.
-    -l --last       Show grants with end date no older than 1 year and 1 month ago.
+    -s --short      Print grant information in short mode.
+
+    -a --active     Show only active grants.
+    -i --inactive   Show only inactive grants.
+    -e --empty      Show grants without resource allocations on this cluster.
+    -o --old        Show grants older than 1 year.
+    -f --full       Show a complete list of grants (implies -e, -o).
 """
 import os
 import sys
@@ -41,8 +42,8 @@ import pymunge
 import json
 
 import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
@@ -66,7 +67,7 @@ def get_data():
     }
     try:
         response = requests.get(URL + '/' + user, headers=header, verify=False)
-        #response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
+        # response = requests.get(URL + '/' + user, headers=header, verify=BURSAR_CERT_PATH)
         response.raise_for_status()
         data = response.json()
         return data
@@ -158,6 +159,8 @@ def line_print():
     print('-------------------------------------------------------')
 
 
+# Filter functions
+
 def last(grant):
     date_str = grant['end']
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
@@ -175,16 +178,13 @@ def active(grant):
     else:
         return False
 
-def all(grant):
-    return True
 
-def allocations(data):
+def has_allocations(data):
     allocations = order_allocations(data['allocations'])
     if allocations:
         return True
     else:
         return False
-
 
 
 def main():
@@ -194,32 +194,23 @@ def main():
         print(f'hpc-grants version: {VERSION}')
         sys.exit(0)
 
-
     data = sorted(get_data(), key=lambda x: x['start'], reverse=True)
 
+    filtered_grants = data
 
-    if args['--all']:
-        filtered_grants = list(filter(all, data))
+    # positive filters
+    if args['--active']:
+        filtered_grants = list(filter(active, filtered_grants))
 
-    elif args['--empty']:
-        filtered_grants = list(filterfalse(allocations, data))
+    if args['--inactive']:
+        filtered_grants = list(filterfalse(active, filtered_grants))
 
-    elif (args['--active'] and args['--inactive']):
-        filtered_grants = list(filter(active, filter(allocations, data))) + list(filterfalse(active, filter(allocations, data)))
-        # active and inactive grants on current cluster, not the same as all grants
+    # negative filters
+    if not args['--empty'] or args['--full']:
+        filtered_grants = list(filter(has_allocations, filtered_grants))
 
-    elif (args['--inactive']):
-        filtered_grants = list(filterfalse(active, filter(allocations, data)))
-
-    elif args['--active']:
-        filtered_grants = list(filter(active, filter(allocations, data)))
-
-    elif args['--last']:
-        filtered_grants = list(filter(last, filter(allocations, data)))
-
-    else:
-        filtered_grants = list(filter(allocations, data))
-    
+    if not args['--old'] or args['--full']:
+        filtered_grants = list(filter(last, filtered_grants))
 
     for j in filtered_grants:
         if args['--short']:
