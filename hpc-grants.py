@@ -22,7 +22,7 @@ Options:
     -a --active     Show only active grants.
     -i --inactive   Show only inactive grants.
     -e --empty      Additionally show grants without resource allocations on this cluster.
-    -o --older      Additionally show grants older than 1 year.
+    -o --old      Additionally show grants older than 1 year.
 """
 
 import os
@@ -209,7 +209,7 @@ def main():
     if not args['--empty']:
         filtered_grants = list(filter(has_allocations, filtered_grants))
 
-    if not args['--older']:
+    if not args['--old']:
         filtered_grants = list(filter(last, filtered_grants))
 
     for j in filtered_grants:
