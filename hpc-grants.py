@@ -22,7 +22,7 @@ Options:
     -a --active     Show only active grants.
     -i --inactive   Show only inactive grants.
     -e --empty      Additionally show grants without resource allocations on this cluster.
-    -o --old      Additionally show grants older than 1 year.
+    -o --old      Additionally show grants finished more than one month ago.
 """
 
 import os
@@ -162,11 +162,11 @@ def line_print():
 # Filter functions
 
 def last(grant):
-    date_str = grant['end']
-    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    end_date_str = grant['end']
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
     present = datetime.now()
-    last1r = present - timedelta(days=395)
-    if (date_obj > last1r):
+    threshold = present - timedelta(days=31)
+    if (end_date > threshold):
         return True
     else:
         return False
