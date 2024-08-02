@@ -22,7 +22,7 @@ Options:
     -a --active     Show only active grants.
     -i --inactive   Show only inactive grants.
     -e --empty      Additionally show grants without resource allocations on this cluster.
-    -o --old      Additionally show grants finished more than one month ago.
+    -o --old        Additionally show grants finished more than one month ago.
 """
 
 import os
