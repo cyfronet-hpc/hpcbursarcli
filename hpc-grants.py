@@ -184,8 +184,7 @@ def active(grant):
 
 
 def has_allocations(data):
-    allocations = order_allocations(data['allocations'])
-    if allocations:
+    if data['allocations']:
         return True
     else:
         return False
