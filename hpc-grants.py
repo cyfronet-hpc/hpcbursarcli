@@ -29,6 +29,7 @@ import os
 import sys
 import itertools
 from collections import OrderedDict
+import textwrap
 
 env_lib_dir = 'HPC_BURSAR_LIBDIR'
 if env_lib_dir in os.environ.keys():
@@ -122,11 +123,14 @@ def process_parameters(params):
     return ordered_params
 
 
+wrapper = textwrap.TextWrapper(initial_indent='    ', subsequent_indent='    ', width=57)
+
+
 def print_grant_short_info(data):
     print(f"Grant: {data['name']}")
     print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
     print(f"  Group: {data['group']}")
-    print(f"   members: {', '.join(sorted(data['group_members']))}")
+    print(f"   members: {wrapper.fill(', '.join(sorted(data['group_members'])))}")
 
 
 def print_grant_info(data):
@@ -152,11 +156,11 @@ def print_grant_info(data):
     else:
         print('  - No allocations')
     print(f"  Group: {data['group']}")
-    print(f"   members: {', '.join(sorted(data['group_members']))}")
+    print(f"   members:\n{wrapper.fill(', '.join(sorted(data['group_members'])))}")
 
 
-def line_print():
-    print('-------------------------------------------------------')
+def print_separator():
+    print('-' * 57)
 
 
 # Filter functions
@@ -212,13 +216,14 @@ def main():
     if not args['--old']:
         filtered_grants = list(filter(last, filtered_grants))
 
+    printer = print_grant_info
+    if args['--short']:
+        printer = print_grant_short_info
+
     for j in filtered_grants:
-        if args['--short']:
-            print_grant_short_info(j)
-        else:
-            print_grant_info(j)
+        printer(j)
         if j != filtered_grants[-1]:
-            line_print()
+            print_separator()
 
 
 if __name__ == '__main__':
