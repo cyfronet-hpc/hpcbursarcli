@@ -46,6 +46,7 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+VERSION = '0.1'
 BURSAR_URL = os.getenv('HPC_BURSAR_URL', 'http://127.0.0.1:8000/api/v1/')
 BURSAR_CERT_PATH = os.getenv('HPC_BURSAR_CERT_PATH', '')
 USER = os.getenv('USER', os.getlogin())
@@ -86,7 +87,6 @@ def get_data():
         raise Exception('Unable to parse server\'s response!')
 
 
-VERSION = '0.1'
 
 
 def order_allocations(allocs):
