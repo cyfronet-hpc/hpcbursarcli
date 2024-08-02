@@ -130,7 +130,7 @@ def print_grant_short_info(data):
     print(f"Grant: {data['name']}")
     print(f"  status: {data['status']}, start: {data['start']}, end: {data['end']}")
     print(f"  Group: {data['group']}")
-    print(f"   members: {wrapper.fill(', '.join(sorted(data['group_members'])))}")
+    print(f"   members:\n{wrapper.fill(', '.join(sorted(data['group_members'])))}")
 
 
 def print_grant_info(data):
